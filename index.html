@@ -6,7 +6,7 @@
 <title>A letter for you</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,wght@0,400;1,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,wght@0,400;1,400&family=Press+Start+2P&display=swap" rel="stylesheet" />
 <style>
   :root {
     --night: #2a1a2e;
@@ -96,7 +96,78 @@
   .letter.show .sign { animation: fadein .8s ease 6.4s forwards; }
   .sign small { display: block; font-size: 1.3rem; color: var(--ink); opacity: .8; }
 
+
+  /* final question popup */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(26, 12, 30, .72);
+    display: none; place-items: center; z-index: 10; padding: 16px;
+  }
+  .overlay.show { display: grid; animation: fadein .5s ease forwards; }
+  .popup {
+    background: var(--paper); border-radius: 18px; padding: 28px 26px;
+    width: min(86vw, 340px); text-align: center;
+    box-shadow: 0 24px 70px rgba(0,0,0,.55);
+    transform: scale(var(--s, 1)); transform-origin: center;
+    transition: transform .45s cubic-bezier(.3,1.4,.5,1);
+  }
+  .popup h2 { font-family: "Caveat", cursive; font-size: 2.2rem; color: #a02c52; font-weight: 600; margin-bottom: 6px; }
+  .popup p { font-size: 1rem; margin-bottom: 18px; opacity: .85; }
+  .btns { display: flex; gap: 12px; justify-content: center; }
+  .btns button {
+    font-family: inherit; font-size: 1rem; padding: 10px 22px; border-radius: 999px;
+    border: 0; cursor: pointer;
+  }
+  .btns button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .yes { background: #b8325a; color: #fff; }
+  .no { background: var(--blush); color: var(--ink); }
+  .reply { display: none; }
+  .reply h2 { font-size: 2.6rem; }
+
+
+  /* Milo walks in */
+  html { overflow-x: hidden; }
+  .envelope-wrap { overflow: hidden; }
+  .dog-scene {
+    display: block; margin: 0 auto; padding: 0; border: 0; background: none;
+    color: inherit; font: inherit; cursor: default; width: 100%;
+  }
+  .dog-scene.ready { cursor: pointer; }
+  .dog-scene:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; border-radius: 12px; }
+  .walker {
+    position: relative; width: 270px; margin: 0 auto; padding-top: 50px;
+    transform: translateX(calc(-0.5 * min(92vw, 560px) - 150px));
+    animation: walkin 5.5s cubic-bezier(.25,.55,.35,1) forwards;
+  }
+  @keyframes walkin { to { transform: translateX(0); } }
+  .tag {
+    position: absolute; top: 4px; left: 68%; transform: translateX(-50%);
+    background: #ffd9e3; color: #8a2447; font-family: "Press Start 2P", monospace; font-size: .8rem;
+    padding: 9px 12px 8px; border-radius: 0; box-shadow: 0 0 0 3px #4a3447; line-height: 1;
+    image-rendering: pixelated;
+  }
+  .tag::after {
+    content: ""; position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%);
+    width: 6px; height: 9px; background: #4a3447;
+  }
+  .dogsvg { display: block; overflow: visible; shape-rendering: crispEdges; image-rendering: pixelated; }
+  .bob { animation: pbob .5s steps(1) infinite; }
+  @keyframes pbob { 0% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+  .leg { animation: stepa .5s steps(1) infinite; }
+  .leg.b { animation-delay: -.25s; }
+  @keyframes stepa { 0% { transform: translate(-1px, 0); } 50% { transform: translate(1px, -1px); } }
+  .tail { animation: pwag .4s steps(1) infinite; }
+  @keyframes pwag { 0% { transform: translate(0, 0); } 50% { transform: translate(-1px, 1px); } }
+  .dog-scene.ready .leg, .dog-scene.ready .tail { animation: none; }
+  .dog-scene.ready .tail { animation: pwag .5s steps(1) infinite; }
+  .dog-scene.ready .bob { animation: hop 1.4s steps(1) infinite; }
+  @keyframes hop { 0%, 55% { transform: translateY(0); } 60% { transform: translateY(-2px); } 66% { transform: translateY(-4px); } 72% { transform: translateY(-2px); } 78%, 100% { transform: translateY(0); } }
+  .hint { opacity: 0; transition: opacity .8s ease; margin: 14px 0 0; }
+  .dog-scene.ready + .hint { opacity: 1; }
+
   @media (prefers-reduced-motion: reduce) {
+    .popup { transition: none; }
+    .walker { animation: none; transform: none; }
+    .leg, .tail, .bob { animation: none !important; }
     .heart, .seal { animation: none; }
     .letter.show, .letter.show p, .letter.show .sign { animation: none; opacity: 1; }
   }
@@ -108,13 +179,13 @@
 
 <main class="stage">
   <div class="envelope-wrap" id="envelopeWrap">
-    <p class="hint" id="hint"></p>
-    <button class="envelope" id="envelope" aria-label="Open the letter">
-      <span class="flap"></span>
-      <span class="fold-l"></span>
-      <span class="fold-r"></span>
-      <span class="seal">♥</span>
+    <button class="dog-scene" id="dogBtn" disabled aria-label="Open the letter Milo brought you">
+      <div class="walker" id="walker">
+        <div class="tag">Milo</div>
+        <svg class="dogsvg" viewBox="0 0 54 38" width="270" aria-hidden="true" shape-rendering="crispEdges"><path fill="rgba(0,0,0,.3)" d="M7 37h40v1h-40z"/><g class="bob"><g class="tail"><path fill="#e4dae6" d="M3 9h1v1h-1zM1 10h1v1h-1zM8 10h1v1h-1zM6 11h1v1h-1zM4 12h1v1h-1zM2 13h1v1h-1zM7 14h1v1h-1zM5 15h1v1h-1zM3 16h1v1h-1zM1 17h1v1h-1zM8 17h1v1h-1zM6 18h1v1h-1zM4 19h1v1h-1z"/><path fill="#ffffff" d="M2 8h1v1h-1zM4 8h1v1h-1zM4 9h3v1h-3zM2 10h6v1h-6zM2 11h4v1h-4zM7 11h1v1h-1zM1 12h3v1h-3zM5 12h4v1h-4zM1 13h1v1h-1zM3 13h6v1h-6zM1 14h6v1h-6zM8 14h1v1h-1zM1 15h4v1h-4zM6 15h4v1h-4zM1 16h2v1h-2zM4 16h5v1h-5zM2 17h6v1h-6zM2 18h4v1h-4zM7 18h1v1h-1zM2 19h2v1h-2zM5 19h3v1h-3zM3 20h4v1h-4z"/><path fill="#4a3447" d="M2 7h1v1h-1zM4 7h1v1h-1zM1 8h1v1h-1zM3 8h1v1h-1zM5 8h2v1h-2zM1 9h2v1h-2zM7 9h2v1h-2zM0 10h1v1h-1zM9 10h1v1h-1zM1 11h1v1h-1zM8 11h1v1h-1zM0 12h1v1h-1zM9 12h1v1h-1zM0 13h1v1h-1zM9 13h1v1h-1zM0 14h1v1h-1zM9 14h1v1h-1zM0 15h1v1h-1zM10 15h1v1h-1zM0 16h1v1h-1zM9 16h1v1h-1zM0 17h1v1h-1zM9 17h1v1h-1zM1 18h1v1h-1zM8 18h1v1h-1zM1 19h1v1h-1zM8 19h1v1h-1zM2 20h1v1h-1zM7 20h1v1h-1zM3 21h4v1h-4z"/></g><g class="leg b"><path fill="#e4dae6" d="M12 31h4v1h-4zM12 32h4v1h-4zM12 33h4v1h-4zM11 34h6v1h-6zM11 35h6v1h-6z"/><path fill="#4a3447" d="M12 30h4v1h-4zM11 31h1v1h-1zM16 31h1v1h-1zM11 32h1v1h-1zM16 32h1v1h-1zM11 33h1v1h-1zM16 33h1v1h-1zM10 34h1v1h-1zM17 34h1v1h-1zM10 35h1v1h-1zM17 35h1v1h-1zM11 36h6v1h-6z"/></g><g class="leg a"><path fill="#e4dae6" d="M28 31h4v1h-4zM28 32h4v1h-4zM28 33h4v1h-4zM27 34h6v1h-6zM27 35h6v1h-6z"/><path fill="#4a3447" d="M28 30h4v1h-4zM27 31h1v1h-1zM32 31h1v1h-1zM27 32h1v1h-1zM32 32h1v1h-1zM27 33h1v1h-1zM32 33h1v1h-1zM26 34h1v1h-1zM33 34h1v1h-1zM26 35h1v1h-1zM33 35h1v1h-1zM27 36h6v1h-6z"/></g><g class="leg a"><path fill="#ffffff" d="M7 31h4v1h-4zM7 32h4v1h-4zM7 33h4v1h-4zM6 34h6v1h-6zM6 35h2v1h-2zM9 35h1v1h-1zM11 35h1v1h-1z"/><path fill="#e4dae6" d="M8 35h1v1h-1zM10 35h1v1h-1z"/><path fill="#4a3447" d="M7 30h4v1h-4zM6 31h1v1h-1zM11 31h1v1h-1zM6 32h1v1h-1zM11 32h1v1h-1zM6 33h1v1h-1zM11 33h1v1h-1zM5 34h1v1h-1zM12 34h1v1h-1zM5 35h1v1h-1zM12 35h1v1h-1zM6 36h6v1h-6z"/></g><g class="leg b"><path fill="#ffffff" d="M23 31h4v1h-4zM23 32h4v1h-4zM23 33h4v1h-4zM22 34h6v1h-6zM22 35h2v1h-2zM25 35h1v1h-1zM27 35h1v1h-1z"/><path fill="#e4dae6" d="M24 35h1v1h-1zM26 35h1v1h-1z"/><path fill="#4a3447" d="M23 30h4v1h-4zM22 31h1v1h-1zM27 31h1v1h-1zM22 32h1v1h-1zM27 32h1v1h-1zM22 33h1v1h-1zM27 33h1v1h-1zM21 34h1v1h-1zM28 34h1v1h-1zM21 35h1v1h-1zM28 35h1v1h-1zM22 36h6v1h-6z"/></g><g class="dogbody"><path fill="#ffffff" d="M38 1h1v1h-1zM35 2h4v1h-4zM33 5h7v1h-7zM41 5h1v1h-1zM34 6h6v1h-6zM31 7h10v1h-10zM30 8h12v1h-12zM30 9h13v1h-13zM29 10h14v1h-14zM28 11h16v1h-16zM27 12h2v1h-2zM32 12h13v1h-13zM10 13h1v1h-1zM13 13h1v1h-1zM16 13h1v1h-1zM19 13h1v1h-1zM22 13h1v1h-1zM25 13h1v1h-1zM27 13h1v1h-1zM33 13h12v1h-12zM9 14h1v1h-1zM13 14h11v1h-11zM25 14h2v1h-2zM34 14h5v1h-5zM40 14h4v1h-4zM45 14h1v1h-1zM11 15h16v1h-16zM34 15h4v1h-4zM40 15h3v1h-3zM45 15h1v1h-1zM9 16h10v1h-10zM20 16h6v1h-6zM35 16h3v1h-3zM40 16h1v1h-1zM42 16h1v1h-1zM45 16h1v1h-1zM8 17h6v1h-6zM15 17h4v1h-4zM20 17h5v1h-5zM35 17h1v1h-1zM37 17h4v1h-4zM42 17h4v1h-4zM6 18h3v1h-3zM10 18h4v1h-4zM15 18h5v1h-5zM21 18h4v1h-4zM35 18h1v1h-1zM37 18h8v1h-8zM6 19h3v1h-3zM10 19h5v1h-5zM16 19h4v1h-4zM21 19h5v1h-5zM35 19h2v1h-2zM38 19h7v1h-7zM5 20h5v1h-5zM11 20h4v1h-4zM16 20h5v1h-5zM22 20h4v1h-4zM38 20h8v1h-8zM6 21h4v1h-4zM11 21h5v1h-5zM17 21h4v1h-4zM22 21h4v1h-4zM37 21h3v1h-3zM42 21h5v1h-5zM6 22h5v1h-5zM12 22h4v1h-4zM17 22h5v1h-5zM23 22h3v1h-3zM35 22h5v1h-5zM42 22h4v1h-4zM5 23h1v1h-1zM7 23h4v1h-4zM12 23h5v1h-5zM18 23h4v1h-4zM23 23h2v1h-2zM35 23h11v1h-11zM5 24h1v1h-1zM7 24h5v1h-5zM13 24h4v1h-4zM18 24h5v1h-5zM24 24h1v1h-1zM35 24h4v1h-4zM40 24h3v1h-3zM44 24h3v1h-3zM5 25h2v1h-2zM8 25h4v1h-4zM13 25h5v1h-5zM19 25h4v1h-4zM35 25h12v1h-12zM6 26h1v1h-1zM8 26h5v1h-5zM14 26h4v1h-4zM19 26h5v1h-5zM38 26h8v1h-8zM6 27h2v1h-2zM9 27h4v1h-4zM14 27h5v1h-5zM20 27h5v1h-5zM34 27h1v1h-1zM38 27h8v1h-8zM9 28h5v1h-5zM15 28h4v1h-4zM20 28h5v1h-5zM34 28h1v1h-1zM38 28h6v1h-6zM45 28h1v1h-1zM7 29h2v1h-2zM10 29h2v1h-2zM13 29h1v1h-1zM16 29h2v1h-2zM19 29h1v1h-1zM22 29h2v1h-2zM25 29h1v1h-1zM39 29h1v1h-1zM41 29h3v1h-3zM7 30h2v1h-2zM10 30h2v1h-2zM13 30h2v1h-2zM16 30h2v1h-2zM19 30h1v1h-1zM22 30h2v1h-2zM25 30h1v1h-1zM32 30h1v1h-1zM41 30h1v1h-1zM7 31h3v1h-3zM11 31h4v1h-4zM16 31h5v1h-5zM22 31h4v1h-4zM27 31h1v1h-1zM29 31h1v1h-1zM31 31h1v1h-1zM7 32h3v1h-3zM11 32h5v1h-5zM17 32h4v1h-4zM22 32h5v1h-5zM28 32h2v1h-2zM31 32h2v1h-2zM8 33h2v1h-2zM12 33h2v1h-2zM17 33h2v1h-2zM20 33h2v1h-2zM24 33h2v1h-2zM28 33h3v1h-3zM32 33h1v1h-1zM12 34h1v1h-1zM24 34h1v1h-1z"/><path fill="#e4dae6" d="M19 16h1v1h-1zM41 16h1v1h-1zM14 17h1v1h-1zM19 17h1v1h-1zM25 17h1v1h-1zM36 17h1v1h-1zM41 17h1v1h-1zM9 18h1v1h-1zM14 18h1v1h-1zM20 18h1v1h-1zM25 18h1v1h-1zM36 18h1v1h-1zM9 19h1v1h-1zM15 19h1v1h-1zM20 19h1v1h-1zM37 19h1v1h-1zM10 20h1v1h-1zM15 20h1v1h-1zM21 20h1v1h-1zM37 20h1v1h-1zM5 21h1v1h-1zM10 21h1v1h-1zM16 21h1v1h-1zM21 21h1v1h-1zM5 22h1v1h-1zM11 22h1v1h-1zM16 22h1v1h-1zM22 22h1v1h-1zM6 23h1v1h-1zM11 23h1v1h-1zM17 23h1v1h-1zM22 23h1v1h-1zM6 24h1v1h-1zM12 24h1v1h-1zM17 24h1v1h-1zM23 24h1v1h-1zM34 24h1v1h-1zM39 24h1v1h-1zM7 25h1v1h-1zM12 25h1v1h-1zM18 25h1v1h-1zM23 25h1v1h-1zM7 26h1v1h-1zM13 26h1v1h-1zM18 26h1v1h-1zM8 27h1v1h-1zM13 27h1v1h-1zM19 27h1v1h-1zM8 28h1v1h-1zM14 28h1v1h-1zM19 28h1v1h-1zM44 28h1v1h-1zM9 29h1v1h-1zM12 29h1v1h-1zM14 29h2v1h-2zM18 29h1v1h-1zM20 29h2v1h-2zM24 29h1v1h-1zM33 29h1v1h-1zM40 29h1v1h-1zM9 30h1v1h-1zM12 30h1v1h-1zM15 30h1v1h-1zM18 30h1v1h-1zM20 30h2v1h-2zM24 30h1v1h-1zM26 30h1v1h-1zM33 30h1v1h-1zM10 31h1v1h-1zM15 31h1v1h-1zM21 31h1v1h-1zM10 32h1v1h-1zM16 32h1v1h-1zM21 32h1v1h-1zM16 33h1v1h-1z"/><path fill="#f1e5d4" d="M30 12h2v1h-2zM28 13h4v1h-4zM27 14h1v1h-1zM29 14h5v1h-5zM27 15h4v1h-4zM32 15h2v1h-2zM26 16h1v1h-1zM28 16h6v1h-6zM26 17h4v1h-4zM31 17h4v1h-4zM27 18h6v1h-6zM34 18h1v1h-1zM26 19h3v1h-3zM30 19h5v1h-5zM26 20h6v1h-6zM33 20h2v1h-2zM26 21h2v1h-2zM29 21h6v1h-6zM26 22h5v1h-5zM32 22h3v1h-3zM25 23h2v1h-2zM28 23h6v1h-6zM25 24h5v1h-5zM31 24h3v1h-3zM24 25h2v1h-2zM27 25h6v1h-6zM34 25h1v1h-1zM24 26h5v1h-5zM30 26h5v1h-5zM26 27h6v1h-6zM33 27h1v1h-1zM25 28h3v1h-3zM29 28h5v1h-5zM26 29h5v1h-5zM32 29h1v1h-1zM28 30h4v1h-4zM26 31h1v1h-1zM28 31h1v1h-1zM32 31h1v1h-1zM34 31h1v1h-1zM27 32h1v1h-1zM30 32h1v1h-1z"/><path fill="#dccab2" d="M29 12h1v1h-1zM32 13h1v1h-1zM28 14h1v1h-1zM31 15h1v1h-1zM27 16h1v1h-1zM34 16h1v1h-1zM30 17h1v1h-1zM26 18h1v1h-1zM33 18h1v1h-1zM29 19h1v1h-1zM32 20h1v1h-1zM28 21h1v1h-1zM31 22h1v1h-1zM27 23h1v1h-1zM34 23h1v1h-1zM30 24h1v1h-1zM26 25h1v1h-1zM33 25h1v1h-1zM29 26h1v1h-1zM25 27h1v1h-1zM32 27h1v1h-1zM28 28h1v1h-1zM31 29h1v1h-1zM27 30h1v1h-1zM30 31h1v1h-1zM33 32h1v1h-1z"/><path fill="#2b1d24" d="M39 14h1v1h-1zM44 14h1v1h-1zM38 15h2v1h-2zM43 15h2v1h-2zM38 16h2v1h-2zM43 16h2v1h-2zM45 18h2v1h-2zM45 19h2v1h-2zM43 24h1v1h-1z"/><path fill="#f6bfcb" d="M35 20h2v1h-2zM35 21h2v1h-2zM40 21h2v1h-2zM40 22h2v1h-2z"/><path fill="#e8a0b4" d="M32 2h3v1h-3zM40 2h3v1h-3zM32 3h3v1h-3zM40 3h3v1h-3zM32 4h3v1h-3zM40 4h3v1h-3z"/><path fill="#d4708f" d="M35 3h5v1h-5zM35 4h5v1h-5z"/><path fill="#d98aa3" d="M47 24h6v1h-6zM51 25h2v1h-2zM46 26h1v1h-1zM50 26h1v1h-1zM52 26h1v1h-1zM49 27h1v1h-1zM52 27h1v1h-1zM52 28h1v1h-1zM44 29h9v1h-9z"/><path fill="#f3c7d3" d="M47 25h4v1h-4zM47 26h3v1h-3zM51 26h1v1h-1zM46 27h1v1h-1zM50 27h2v1h-2zM46 28h1v1h-1zM49 28h3v1h-3z"/><path fill="#b8325a" d="M47 27h2v1h-2zM47 28h2v1h-2z"/><path fill="#4a3447" d="M38 0h1v1h-1zM32 1h6v1h-6zM39 1h4v1h-4zM31 2h1v1h-1zM39 2h1v1h-1zM43 2h1v1h-1zM31 3h1v1h-1zM43 3h1v1h-1zM31 4h1v1h-1zM43 4h1v1h-1zM32 5h1v1h-1zM40 5h1v1h-1zM42 5h1v1h-1zM31 6h3v1h-3zM40 6h2v1h-2zM30 7h1v1h-1zM41 7h1v1h-1zM29 8h1v1h-1zM42 8h1v1h-1zM29 9h1v1h-1zM43 9h1v1h-1zM28 10h1v1h-1zM43 10h1v1h-1zM27 11h1v1h-1zM44 11h1v1h-1zM10 12h1v1h-1zM13 12h1v1h-1zM16 12h1v1h-1zM19 12h1v1h-1zM22 12h1v1h-1zM25 12h2v1h-2zM45 12h1v1h-1zM9 13h1v1h-1zM11 13h2v1h-2zM14 13h2v1h-2zM17 13h2v1h-2zM20 13h2v1h-2zM23 13h2v1h-2zM26 13h1v1h-1zM45 13h1v1h-1zM8 14h1v1h-1zM10 14h3v1h-3zM24 14h1v1h-1zM46 14h1v1h-1zM9 15h2v1h-2zM46 15h1v1h-1zM8 16h1v1h-1zM46 16h1v1h-1zM6 17h2v1h-2zM46 17h1v1h-1zM5 18h1v1h-1zM47 18h1v1h-1zM5 19h1v1h-1zM47 19h1v1h-1zM4 20h1v1h-1zM46 20h1v1h-1zM4 21h1v1h-1zM47 21h1v1h-1zM4 22h1v1h-1zM46 22h1v1h-1zM4 23h1v1h-1zM46 23h7v1h-7zM4 24h1v1h-1zM53 24h1v1h-1zM4 25h1v1h-1zM53 25h1v1h-1zM5 26h1v1h-1zM35 26h3v1h-3zM53 26h1v1h-1zM5 27h1v1h-1zM35 27h1v1h-1zM37 27h1v1h-1zM53 27h1v1h-1zM6 28h2v1h-2zM35 28h1v1h-1zM37 28h1v1h-1zM53 28h1v1h-1zM6 29h1v1h-1zM34 29h1v1h-1zM38 29h1v1h-1zM53 29h1v1h-1zM6 30h1v1h-1zM34 30h1v1h-1zM39 30h2v1h-2zM42 30h11v1h-11zM6 31h1v1h-1zM33 31h1v1h-1zM35 31h1v1h-1zM41 31h1v1h-1zM6 32h1v1h-1zM34 32h1v1h-1zM7 33h1v1h-1zM10 33h2v1h-2zM14 33h2v1h-2zM19 33h1v1h-1zM22 33h2v1h-2zM26 33h2v1h-2zM31 33h1v1h-1zM33 33h1v1h-1zM8 34h2v1h-2zM11 34h1v1h-1zM13 34h1v1h-1zM16 34h3v1h-3zM20 34h2v1h-2zM23 34h1v1h-1zM25 34h1v1h-1zM28 34h3v1h-3zM32 34h1v1h-1zM12 35h1v1h-1zM24 35h1v1h-1z"/></g></g></svg>
+      </div>
     </button>
+    <p class="hint" id="hint"></p>
   </div>
 
   <article class="letter" id="letter">
@@ -123,7 +194,7 @@
       Ayy Imi! Sid here. I have something very important to tell you, so listen carefully.
     </p>
     <p>
-      I love you. Murtuem. Like, really really a lot.
+      We luv luv. Like, really really a lot.
     </p>
     <p>
       So blease be my unga forever. Okay? Okay.
@@ -138,6 +209,24 @@
   </article>
 </main>
 
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="q">
+  <div class="popup" id="popup">
+    <div id="ask">
+      <h2 id="q">Do you love Sid?</h2>
+      <p id="sub">Be honest, Imi.</p>
+      <div class="btns">
+        <button class="yes" id="yes">Yes</button>
+        <button class="no" id="no">No</button>
+      </div>
+    </div>
+    <div class="reply" id="reply">
+      <h2>Yay!</h2>
+      <p>I love you too, Imi. Forever. Blease stay my unga.</p>
+    </div>
+  </div>
+</div>
+
 <script>
   // ✏️ EDIT THESE TWO LINES
   const HER_NAME = "Imi";
@@ -145,15 +234,53 @@
 
   document.getElementById("to").textContent = "Ayy " + HER_NAME + "!";
   document.getElementById("from").textContent = YOUR_NAME;
-  document.getElementById("hint").textContent = "A letter for you, " + HER_NAME + ". Tap to open.";
+  document.getElementById("hint").textContent = "Milo brought you a letter, " + HER_NAME + ". Tap to open.";
 
-  const envelope = document.getElementById("envelope");
+  const envelope = document.getElementById("dogBtn");
   const wrap = document.getElementById("envelopeWrap");
   const letter = document.getElementById("letter");
 
   envelope.addEventListener("click", () => {
     wrap.classList.add("gone");
     setTimeout(() => letter.classList.add("show"), 450);
+  });
+
+  // Milo arrives, then the letter can be opened
+  const walker = document.getElementById("walker");
+  function arrive() { envelope.classList.add("ready"); envelope.disabled = false; }
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    arrive();
+  } else {
+    walker.addEventListener("animationend", (e) => { if (e.animationName === "walkin") arrive(); });
+  }
+
+  // final question popup
+  const overlay = document.getElementById("overlay");
+  const popup = document.getElementById("popup");
+  const noBtn = document.getElementById("no");
+  const sub = document.getElementById("sub");
+  const lines = ["Are you sure?", "Think again...", "Really?", "Please? \ud83e\udd7a", "Okay just say yes", "You know you want to"];
+  let scale = 1, clicks = 0;
+
+  envelope.addEventListener("click", () => {
+    setTimeout(() => overlay.classList.add("show"), 8500);
+  });
+
+  noBtn.addEventListener("click", () => {
+    const max = Math.min(
+      (window.innerWidth * 0.96) / popup.offsetWidth,
+      (window.innerHeight * 0.96) / popup.offsetHeight
+    );
+    scale = Math.min(scale * 1.25, max);
+    popup.style.setProperty("--s", scale);
+    sub.textContent = lines[Math.min(clicks, lines.length - 1)];
+    clicks++;
+  });
+
+  document.getElementById("yes").addEventListener("click", () => {
+    document.getElementById("ask").style.display = "none";
+    document.getElementById("reply").style.display = "block";
+    popup.style.setProperty("--s", 1);
   });
 
   // gentle floating hearts
